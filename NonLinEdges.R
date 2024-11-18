@@ -1,4 +1,4 @@
-###This function is the basic framework of the method presented in "Estimating nonlinear relations 
+###This function is the basic framework of the method presented in "Identifying nonlinear relations 
 ###among random variables: A network analytic approach." It differs from what is presented in that
 ###instead of residualizing on only the significantly linear edges, we residualize on regressions of
 ###all variables on all other variables. dat is the user's data in wide format, nperm is the number
@@ -6,13 +6,16 @@
 ###of the partial distance correlations
 
 NonLinEdges <- function(dat, nperm){
+  require(energy)
+  require(stats)
   ###Set up residuals dataframe
-  residuals <- data.frame(matrix(ncol = ncol(dat), nrow = 0))
-  colnames(resid) <- colnames(dat)
+  residuals <- data.frame(matrix(ncol = ncol(dat), nrow = nrow(dat)))
+  colnames(residuals) <- colnames(dat)
   ###Get residuals
   for(i in 1:ncol(residuals)){
-    outcol <- colnames(residuals)[i]
-    residuals[,i] <- resid(lm(outcol ~ .))
+    outcol <- dat[, i]  
+    preds <- dat[, -i, drop = FALSE]
+    residuals[, i] <- resid(lm(outcol ~ ., data = na.omit(cbind(outcol, preds))))
   }
   ###Get pdcor matrix
   k <- 1:ncol(residuals)
@@ -31,3 +34,5 @@ NonLinEdges <- function(dat, nperm){
   return(p_mat)
 
 }
+
+
